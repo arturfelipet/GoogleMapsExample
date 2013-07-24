@@ -2,7 +2,7 @@
 //  ViewController.h
 //  GoogleMapsExample
 //
-//  Created by Chleba Agencia Digital on 12/13/12.
+//  Created by Artur Felipe on 12/13/12.
 //  Copyright (c) 2012 Google Maps Example. All rights reserved.
 //
 

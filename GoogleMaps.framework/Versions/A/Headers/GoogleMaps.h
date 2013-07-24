@@ -8,14 +8,38 @@
 //  Service: https://developers.google.com/maps/terms
 //
 
+#import <CoreLocation/CoreLocation.h>
+#import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
+
+#import <GoogleMaps/GMSCameraPosition.h>
+#import <GoogleMaps/GMSCameraUpdate.h>
+#import <GoogleMaps/GMSCircle.h>
+#import <GoogleMaps/GMSCoordinateBounds.h>
 #import <GoogleMaps/GMSGeocoder.h>
+#import <GoogleMaps/GMSGeometryUtils.h>
+#import <GoogleMaps/GMSGroundOverlay.h>
+#import <GoogleMaps/GMSMapLayer.h>
+#import <GoogleMaps/GMSMapView+Animation.h>
+#import <GoogleMaps/GMSMapView+Overlays.h>
 #import <GoogleMaps/GMSMapView.h>
 #import <GoogleMaps/GMSMarker.h>
-#import <GoogleMaps/GMSMarkerOptions.h>
-#import <GoogleMaps/GMSModel.h>
+#import <GoogleMaps/GMSMutablePath.h>
+#import <GoogleMaps/GMSOrientation.h>
+#import <GoogleMaps/GMSOverlay.h>
+#import <GoogleMaps/GMSPanorama.h>
+#import <GoogleMaps/GMSPanoramaCamera.h>
+#import <GoogleMaps/GMSPanoramaCameraUpdate.h>
+#import <GoogleMaps/GMSPanoramaLink.h>
+#import <GoogleMaps/GMSPanoramaService.h>
+#import <GoogleMaps/GMSPanoramaView.h>
+#import <GoogleMaps/GMSPath.h>
+#import <GoogleMaps/GMSPolygon.h>
 #import <GoogleMaps/GMSPolyline.h>
-#import <GoogleMaps/GMSPolylineOptions.h>
 #import <GoogleMaps/GMSProjection.h>
 #import <GoogleMaps/GMSReverseGeocodeOutput.h>
 #import <GoogleMaps/GMSServices.h>
-
+#import <GoogleMaps/GMSSyncTileLayer.h>
+#import <GoogleMaps/GMSTileLayer.h>
+#import <GoogleMaps/GMSUISettings.h>
+#import <GoogleMaps/GMSURLTileLayer.h>

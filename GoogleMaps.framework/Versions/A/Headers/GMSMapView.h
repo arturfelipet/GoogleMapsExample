@@ -11,27 +11,46 @@
 #import <CoreLocation/CoreLocation.h>
 #import <UIKit/UIKit.h>
 
-#import <GoogleMaps/GMSModel.h>
+#import <GoogleMaps/GMSMapLayer.h>
+#import <GoogleMaps/GMSUISettings.h>
 
+@class GMSCameraPosition;
+@class GMSCameraUpdate;
+@class GMSMapLayer;
 @class GMSMapView;
-@class GMSMarkerOptions;
-@class GMSPolylineOptions;
+@class GMSMarker;
+@class GMSOverlay;
 @class GMSProjection;
 
-@protocol GMSMarker;
-@protocol GMSPolyline;
-
+/** Delegate for events on GMSMapView. */
 @protocol GMSMapViewDelegate <NSObject>
 
 @optional
 
 /**
- * Called after the camera position has changed. During an animation, this
- * delegate might not be notified of intermediate camera positions. However, it
- * will always be called eventually with the final position of an the animation.
+ * Called before the camera on the map changes, either due to a gesture,
+ * animation (e.g., by a user tapping on the "My Location" button) or by being
+ * updated explicitly via the camera or a zero-length animation on layer.
+ *
+ * @param gesture If YES, this is occuring due to a user gesture.
+*/
+- (void)mapView:(GMSMapView *)mapView willMove:(BOOL)gesture;
+
+/**
+ * Called repeatedly during any animations or gestures on the map (or once, if
+ * the camera is explicitly set). This may not be called for all intermediate
+ * camera positions. It is always called for the final position of an animation
+ * or gesture.
  */
 - (void)mapView:(GMSMapView *)mapView
-    didChangeCameraPosition:(GMSCamera)position;
+    didChangeCameraPosition:(GMSCameraPosition *)position;
+
+/**
+ * Called when the map becomes idle, after any outstanding gestures or
+ * animations have completed (or after the camera has been explicitly set).
+ */
+- (void)mapView:(GMSMapView *)mapView
+    idleAtCameraPosition:(GMSCameraPosition *)position;
 
 /**
  * Called after a tap gesture at a particular coordinate, but only if a marker
@@ -59,13 +78,22 @@
  *         from performing its default selection behavior, and NO if the map
  *         should continue with its default selection behavior.
  */
-- (BOOL)mapView:(GMSMapView *)mapView didTapMarker:(id<GMSMarker>)marker;
+- (BOOL)mapView:(GMSMapView *)mapView didTapMarker:(GMSMarker *)marker;
 
 /**
  * Called after a marker's info window has been tapped.
  */
 - (void)mapView:(GMSMapView *)mapView
-    didTapInfoWindowOfMarker:(id<GMSMarker>)marker;
+    didTapInfoWindowOfMarker:(GMSMarker *)marker;
+
+/**
+ * Called after an overlay has been tapped.
+ * This method is not called for taps on markers.
+ *
+ * @param mapView The map view that was pressed.
+ * @param overlay The overlay that was pressed.
+ */
+- (void)mapView:(GMSMapView *)mapView didTapOverlay:(GMSOverlay *)overlay;
 
 /**
  * Called when a marker is about to become selected, and provides an optional
@@ -79,8 +107,7 @@
  *
  * @return The custom info window for the specified marker, or nil for default
  */
-- (UIView *)mapView:(GMSMapView *)mapView
-    markerInfoWindow:(id<GMSMarker>)marker;
+- (UIView *)mapView:(GMSMapView *)mapView markerInfoWindow:(GMSMarker *)marker;
 
 @end
 
@@ -100,46 +127,58 @@ typedef enum {
   /** Satellite maps with a transparent label overview. */
   kGMSTypeHybrid,
 
+  /** No maps, no labels.  Display of traffic data is not supported. */
+  kGMSTypeNone,
+
 } GMSMapViewType;
 
 /**
- * A map view.  This class should not be instantiated directly, instead it
- * must be created with [GMSServices mapWithFrame:camera:].
+ * This is the main class of the Google Maps SDK for iOS and is the entry point
+ * for all methods related to the map.
  *
- * GMSMapView is not thread safe, and should only be interacted with on the UI
- * thread.  This also follows for related objects such as markers and polylines.
+ * The map should be instantiated via the convenience constructor
+ * [GMSMapView mapWithFrame:camera:]. It may also be created with the default
+ * [[GMSMapView alloc] initWithFrame:] method (wherein its camera will be set to
+ * a default location).
+ *
+ * GMSMapView can only be read and modified from the main thread, similar to all
+ * UIKit objects. Calling these methods from another thread will result in an
+ * exception or undefined behavior.
  */
 @interface GMSMapView : UIView
 
 /** GMSMapView delegate. */
-@property (nonatomic, weak) id<GMSMapViewDelegate> delegate;
+@property(nonatomic, weak) id<GMSMapViewDelegate> delegate;
 
 /**
- * Controls the camera, which defines how the map is oriented.  If this property
- * is explicitly set, the camera is moved immediately, without animation; this
- * will also stop any previous running animation begun by animateToCamera:.
+ * Controls the camera, which defines how the map is oriented. Modification of
+ * this property is instantaneous.
  */
-@property (nonatomic, assign) GMSCamera camera;
+@property(nonatomic, strong) GMSCameraPosition *camera;
 
 /**
- * The GMSProjection currently used by this GMSMapView.  This is a snapshot of
- * the current projection, and will not automatically update when the camera
- * moves.
+ * Returns a GMSProjection object that you can use to convert between screen
+ * coordinates and latitude/longitude coordinates.
+ *
+ * This is a snapshot of the current projection, and will not automatically
+ * update when the camera moves. It represents either the projection of the last
+ * drawn GMSMapView frame, or; where the camera has been explicitly set or the
+ * map just created, the upcoming frame. It will never be nil.
  */
-@property (nonatomic, readonly) GMSProjection *projection;
+@property(nonatomic, readonly) GMSProjection *projection;
 
 /**
  * Controls whether the My Location dot and accuracy circle is enabled.
  * Defaults to NO.
  */
-@property (nonatomic, assign, getter=isMyLocationEnabled) BOOL myLocationEnabled;
+@property(nonatomic, assign, getter=isMyLocationEnabled) BOOL myLocationEnabled;
 
 /**
  * If My Location is enabled, reveals where the user location dot is being
  * drawn. If it is disabled, or it is enabled but no location data is available,
  * this will be nil.  This property is observable using KVO.
  */
-@property (nonatomic, strong, readonly) CLLocation *myLocation;
+@property(nonatomic, strong, readonly) CLLocation *myLocation;
 
 /**
  * The marker that is selected.  Setting this property selects a particular
@@ -147,87 +186,87 @@ typedef enum {
  * it to nil deselects the marker, hiding the info window.  This property is
  * observable using KVO.
  */
-@property (nonatomic, strong) id<GMSMarker> selectedMarker;
+@property(nonatomic, strong) GMSMarker *selectedMarker;
 
 /**
  * Controls whether the map is drawing traffic data, if available.  This is
  * subject to the availability of traffic data.  Defaults to NO.
  */
-@property (nonatomic, assign, getter=isTrafficEnabled) BOOL trafficEnabled;
+@property(nonatomic, assign, getter=isTrafficEnabled) BOOL trafficEnabled;
 
 /**
  * Controls the type of map tiles that should be displayed.  Defaults to
  * kGMSTypeNormal.
  */
-@property (nonatomic, assign) GMSMapViewType mapType;
+@property(nonatomic, assign) GMSMapViewType mapType;
+
+/**
+ * If set, 3D buildings will be shown where available.  Defaults to YES.
+ *
+ * This may be useful when adding a custom tile layer to the map, in order to
+ * make it clearer at high zoom levels.  Changing this value will cause all
+ * tiles to be briefly invalidated.
+ */
+@property(nonatomic, assign, getter=isBuildingsEnabled) BOOL buildingsEnabled;
+
+/**
+ * Sets whether indoor maps are shown, where available. Defaults to YES.
+ *
+ * If this is set to NO, caches for indoor data may be purged and any floor
+ * currently selected by the end-user may be reset.
+ */
+@property(nonatomic, assign, getter=isIndoorEnabled) BOOL indoorEnabled;
+
+/**
+ * Gets the GMSUISettings object, which controls user interface settings for the
+ * map.
+ */
+@property(nonatomic, readonly) GMSUISettings *settings;
+
+/**
+ * Defaults to YES. If set to NO, GMSMapView will generate accessibility
+ * elements for overlay objects, such as GMSMarker and GMSPolyline.
+ *
+ * This property is as per the informal UIAcessibility protocol, except for the
+ * default value of YES.
+ */
+@property(nonatomic) BOOL accessibilityElementsHidden;
+
+/**
+ * Accessor for the custom CALayer type used for the layer.
+ */
+@property(nonatomic, readonly, retain) GMSMapLayer *layer;
 
 /**
  * Builds and returns a GMSMapView, with a frame and camera target.
  */
-+ (GMSMapView *)mapWithFrame:(CGRect)frame
-                      camera:(GMSCamera)camera;
++ (instancetype)mapWithFrame:(CGRect)frame camera:(GMSCameraPosition *)camera;
 
 /**
- * Tells this map to power up its renderer.  If you are using a view controller,
- * you should call this from viewWillAppear.
+ * Tells this map to power up its renderer.  This is optional- GMSMapView will
+ * automatically invoke this method when added to a window.  It is safe to call
+ * this method more than once.
  */
 - (void)startRendering;
 
 /**
- * Tells this map to power down its renderer, releasing its resources.  If you
- * are using a view controller, you should call this from viewDidDisappear.
+ * Tells this map to power down its renderer, releasing its resources.  This is
+ * optional- GMSMapView will automatically invoke this method when removed from
+ * a window.  It is safe to call this method more than once.
  */
 - (void)stopRendering;
 
 /**
- * Animates the target of the camera from the current location to |location|.
- * During the animation, retrieving the camera position through the camera
- * property returns an intermediate location.
- *
- * The duration of this animation is controlled by Core Animation.
- */
-- (void)animateToLocation:(CLLocationCoordinate2D)location;
-
-/**
- * As animateToLocation:, but changes the zoom level of the camera.  This value
- * is clamped by [kGMSMinZoomLevel, kGMSMaxZoomLevel].
- */
-- (void)animateToZoom:(CGFloat)zoom;
-
-/**
- * As animateToLocation:, but changes the bearing of the camera (in degrees).
- * Zero indicates true north.
- */
-- (void)animateToBearing:(CLLocationDirection)bearing;
-
-/**
- * As animateToLocation:, but changes the viewing angle of the camera (in
- * degrees).  This value will be clamped to a minimum of zero (i.e., facing
- * straight down) and between 30 and 45 degrees towards the horizon, depending
- * on the relative closeness to the earth.
- */
-- (void)animateToViewingAngle:(double)viewingAngle;
-
-/**
- * Adds a marker to the map.  To remove the marker, call GMSMarker remove.
- *
- * @param options The marker options that configure the marker.
- * @return A marker object.
- */
-- (id<GMSMarker>)addMarkerWithOptions:(GMSMarkerOptions *)options;
-
-/**
- * Adds a polyline to the map.  To remove the polyline, call GMSPolyline remove.
- *
- * @param options The polyline options that configure the polyline.
- * @return A polyline.
- */
-- (id<GMSPolyline>)addPolylineWithOptions:(GMSPolylineOptions *)options;
-
-/**
- * Clears all markup that has been added to the map, including markers and
- * polylines.  This will not clear the visible location dot.
+ * Clears all markup that has been added to the map, including markers,
+ * polylines and ground overlays.  This will not clear the visible location dot
+ * or reset the current mapType.
  */
 - (void)clear;
+
+/**
+ * Changes the camera according to |update|.
+ * The camera change is instantaneous (with no animation).
+ */
+- (void)moveCamera:(GMSCameraUpdate *)update;
 
 @end

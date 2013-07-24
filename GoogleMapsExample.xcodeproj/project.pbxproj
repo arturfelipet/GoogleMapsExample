@@ -32,6 +32,7 @@
 		9E99472C1679DFAC00E3DA3A /* OpenGLES.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E99472B1679DFAC00E3DA3A /* OpenGLES.framework */; };
 		9E99472E1679DFB400E3DA3A /* QuartzCore.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E99472D1679DFB400E3DA3A /* QuartzCore.framework */; };
 		9E9947301679DFBB00E3DA3A /* SystemConfiguration.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 9E99472F1679DFBB00E3DA3A /* SystemConfiguration.framework */; };
+		9EA20F0E17A04AE700AE4193 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 9EA20F0D17A04AE700AE4193 /* libc++.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -65,6 +66,7 @@
 		9E99472B1679DFAC00E3DA3A /* OpenGLES.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGLES.framework; path = System/Library/Frameworks/OpenGLES.framework; sourceTree = SDKROOT; };
 		9E99472D1679DFB400E3DA3A /* QuartzCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = QuartzCore.framework; path = System/Library/Frameworks/QuartzCore.framework; sourceTree = SDKROOT; };
 		9E99472F1679DFBB00E3DA3A /* SystemConfiguration.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SystemConfiguration.framework; path = System/Library/Frameworks/SystemConfiguration.framework; sourceTree = SDKROOT; };
+		9EA20F0D17A04AE700AE4193 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "usr/lib/libc++.dylib"; sourceTree = SDKROOT; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -72,6 +74,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				9EA20F0E17A04AE700AE4193 /* libc++.dylib in Frameworks */,
 				9E9947301679DFBB00E3DA3A /* SystemConfiguration.framework in Frameworks */,
 				9E99472E1679DFB400E3DA3A /* QuartzCore.framework in Frameworks */,
 				9E99472C1679DFAC00E3DA3A /* OpenGLES.framework in Frameworks */,
@@ -125,6 +128,7 @@
 				9E9947231679DF8700E3DA3A /* ImageIO.framework */,
 				9E9947251679DF9100E3DA3A /* libicucore.dylib */,
 				9E9947271679DF9B00E3DA3A /* libstdc++.dylib */,
+				9EA20F0D17A04AE700AE4193 /* libc++.dylib */,
 				9E9947291679DFA400E3DA3A /* libz.dylib */,
 				9E99472B1679DFAC00E3DA3A /* OpenGLES.framework */,
 				9E99472D1679DFB400E3DA3A /* QuartzCore.framework */,
@@ -374,6 +378,7 @@
 				9E9947141679DE8800E3DA3A /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

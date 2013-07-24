@@ -21,6 +21,9 @@ typedef void (^GMSReverseGeocodeCallback)(GMSReverseGeocodeResponse *,
  */
 @interface GMSGeocoder : NSObject
 
+/* Convenience constructor for GMSGeocoder. */
++ (GMSGeocoder *)geocoder;
+
 /**
  * Reverse geocodes a coordinate on the Earth's surface.
  *

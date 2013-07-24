@@ -8,7 +8,8 @@
 //  Service: https://developers.google.com/maps/terms
 //
 
-@interface GMSServices
+/** Service class for the Google Maps SDK for iOS. May not be instantiated. */
+@interface GMSServices : NSObject
 
 /**
  * Provides your API key to the Google Maps SDK for iOS.  This key is generated
