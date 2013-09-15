@@ -20,8 +20,8 @@
 	GMSCameraPosition *camera = [GMSCameraPosition cameraWithLatitude:-33.8683 longitude:151.2086 zoom:6];
 	
     mapView_ = [GMSMapView mapWithFrame:CGRectZero camera:camera];
-    mapView_.delegate = self;
-    mapView_.myLocationEnabled = YES;
+    [mapView_ setDelegate:self];
+    [mapView_ setMyLocationEnabled:YES];
     
     // Map Types Available
     mapView_.mapType = kGMSTypeNormal;
@@ -33,9 +33,9 @@
     
     // How to Add Markers
     GMSMarker *marker = [[GMSMarker alloc] init];
-    marker.position = CLLocationCoordinate2DMake(-33.8683, 151.2086);
-    marker.title = @"Sydney";
-    marker.snippet = @"Australia"; //Description in Info Window
+    [marker setPosition:CLLocationCoordinate2DMake(-33.8683, 151.2086)];
+    [marker setTitle:@"Sydney"];
+    [marker setSnippet:@"Australia"]; //Description in Info Window
 
 	[marker setMap:mapView_];
     
